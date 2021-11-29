@@ -1,8 +1,8 @@
 from datetime import datetime
-from reference.Strategy import BaseStrategyFrame
 from reference.Strategy import zwpy_sta
 import pathlib
 import backtrader as bt
+# from __future__ import (absolute_import, division, print_function, unicode_literals)
 
 
 BTC_data = pathlib.Path().cwd() / "BTC_hour.csv"
@@ -11,11 +11,7 @@ BTC_data = pathlib.Path().cwd() / "BTC_hour.csv"
 cerebro = bt.Cerebro()
 cerebro.addstrategy(zwpy_sta.MacdV2Strategy)
 cerebro.broker.setcash(100000)
-# cerebro.addstrategy(zwpy_sta.BBandsStrategy)
 
-# data0 = bt.feeds.YahooFinanceData(dataname=BTC_data, fromdate=datetime(2019, 9, 25),
-#                                     todate=datetime(2019, 10, 25))
-# cerebro.adddata(data0)
 dt_start = datetime.strptime("20190925","%Y%m%d")
 dt_end = datetime.strptime("20211028","%Y%m%d")
 data = bt.feeds.GenericCSVData(
@@ -46,4 +42,4 @@ returns, positions, transactions, gross_lev = pyfoliozer.get_pf_items()
 import pyfolio as pf
 
 pf.create_full_tear_sheet(returns,)
-cerebro.plot()
+cerebro.plot(iplot = False)
