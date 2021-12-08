@@ -199,8 +199,6 @@ for fast_period in range(11,14):
                 best_params["slow_period"] = slow_period
                 best_params["signal_period"] = signal_period
                 best_params["ending_value"] = cerebro.broker.getvalue()
-            print(best_params)
-# print(f"The Best Paeameters  fast_period:{best_params["fast_period"]}, slow_period{best_params["slow_period"]}, signal_period{best_params["signal_period"]}")
 print(f"The Best Parameters : {best_params}")
 with open("params.json", "w") as f:
     json.dump(best_params, f, indent = 4) 
