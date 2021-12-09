@@ -4,14 +4,30 @@ from datetime import datetime
 import pathlib
 import backtrader as bt
 import json
+import pandas as pd
 
-BTC_data = pathlib.Path().cwd() / "BTC_hour.csv"
-params_config = pathlib.Path().cwd() / "params.json"
+#route init
+curr_folder = pathlib.Path().cwd()
+BTC_data = curr_folder / "BTC_hour.csv"
+params_config = curr_folder / "params.json"
+resample_folder = curr_folder / "resample"
+if not resample_folder.exists():
+    resample_folder.mkdir(parents=True, exist_ok=True)
+
+# Cutting dataset
+all_data = pd.read_csv(BTC_data)
+train = all_data[all_data['datetime'] < '2021-01-01 0:00:00']
+test = all_data[all_data['datetime'] >= '2021-01-01 0:00:00']
+train.to_csv(str(resample_folder / "training_set.csv"), index = False)
+train.to_csv(str(resample_folder / "testing_set.csv"), index = False)
+BTC_train_data = resample_folder / "training_set.csv"
+BTC_test_data = resample_folder / "testing_set.csv"
+
+
 dt_start = datetime.strptime("20190925","%Y%m%d")
 dt_end = datetime.strptime("20211028","%Y%m%d")
 best_params = dict()
 best_params["ending_value"] = 0
-
 
 class BaseStrategyFrame(bt.Strategy):
     """
