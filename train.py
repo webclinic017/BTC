@@ -1,16 +1,71 @@
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 from datetime import datetime
 import pathlib
 import backtrader as bt
 import json
-# from __future__ import (absolute_import, division, print_function, unicode_literals)
+import pandas as pd
 
-BTC_data = pathlib.Path().cwd() / "BTC_hour.csv"
-params_config = pathlib.Path().cwd() / "params.json"
-dt_start = datetime.strptime("20190925","%Y%m%d")
-dt_end = datetime.strptime("20211028","%Y%m%d")
-best_params = dict()
-best_params["ending_value"] = 0
+# route init
+curr_folder = pathlib.Path().cwd()
+BTC_data_min = curr_folder / "BTCUSDT_UPERP_1m.csv"
 
+# report folder init
+report_folder = curr_folder / "report"
+if not report_folder.exists():
+    report_folder.mkdir(parents=True, exist_ok=True)
+
+BTC_data_min = pd.read_csv(BTC_data_min, parse_dates =["datetime"], index_col ="datetime")
+BTC_data = BTC_data_min.resample('h').mean()
+data_folder = curr_folder / "data"
+if not data_folder.exists():
+    data_folder.mkdir(parents=True, exist_ok=True)
+
+
+params = {
+    "train":{
+        "default":{
+            "fast_period":0,
+            "slow_period":0,
+            "signal_period":0,
+            "starting_value":100000,
+            "ending_value":0,
+            "profit":0
+    },
+        "best":{
+            "fast_period":0,
+            "slow_period":0,
+            "signal_period":0,
+            "starting_value":100000,
+            "ending_value":0,
+            "profit":0
+    }
+    },
+    "test":{
+        "best":{
+            "fast_period":0,
+            "slow_period":0,
+            "signal_period":0,
+            "starting_value":100000,
+            "ending_value":0,
+            "profit":0
+    }
+    }
+}
+
+# Cutting dataset
+train = BTC_data[BTC_data.index < '2021-01-01 0:00:00']
+test = BTC_data[BTC_data.index >= '2021-01-01 0:00:00']
+BTC_data.to_csv(str(data_folder / "BTC_hour.csv"))
+train.to_csv(str(data_folder / "training_set.csv"))
+test.to_csv(str(data_folder / "testing_set.csv"))
+
+BTC_train_data = data_folder / "training_set.csv"
+BTC_test_data = data_folder / "testing_set.csv"
+
+
+dt_start = datetime.strptime("2019-09-25","%Y-%m-%d")
+dt_end = datetime.strptime("2020-12-31","%Y-%m-%d")
 
 class BaseStrategyFrame(bt.Strategy):
     """
@@ -99,6 +154,7 @@ class BaseStrategyFrame(bt.Strategy):
         # self.log('Ending Value %.2f' % self.broker.getvalue(), doprint=True)
         print("=== Backtesting Finished! ===")
 
+# train params
 for fast_period in range(11,14):
     for slow_period in range(25,28):
         for signal_period in range(7,11):
@@ -176,7 +232,7 @@ for fast_period in range(11,14):
             data = bt.feeds.GenericCSVData(
                 timeframe = bt.TimeFrame.Minutes,
                 compression = 60,
-                dataname=BTC_data,
+                dataname=BTC_train_data,
                 fromdate=dt_start,      
                 todate=dt_end,
                 nullvalue=0.0,
@@ -194,12 +250,118 @@ for fast_period in range(11,14):
             cerebro.addanalyzer(bt.analyzers.PyFolio, _name='pyfolio')
             results = cerebro.run()
             print('Ending Value: %.2f' % cerebro.broker.getvalue())
-            if cerebro.broker.getvalue() > best_params["ending_value"]:
-                best_params["fast_period"] = fast_period
-                best_params["slow_period"] = slow_period
-                best_params["signal_period"] = signal_period
-                best_params["ending_value"] = cerebro.broker.getvalue()
-print(f"The Best Parameters : {best_params}")
-with open("params.json", "w") as f:
-    json.dump(best_params, f, indent = 4) 
-                
+            if fast_period == 12 and slow_period == 26 and signal_period == 9:
+                params["train"]["default"]["fast_period"] = fast_period
+                params["train"]["default"]["slow_period"] = slow_period
+                params["train"]["default"]["signal_period"] = signal_period
+                params["train"]["default"]["ending_value"] = cerebro.broker.getvalue()
+                params["train"]["default"]["profit"] = cerebro.broker.getvalue() - 100000
+
+
+            if cerebro.broker.getvalue() > params["train"]["best"]["ending_value"]:
+                params["train"]["best"]["fast_period"] = fast_period
+                params["train"]["best"]["slow_period"] = slow_period
+                params["train"]["best"]["signal_period"] = signal_period
+                params["train"]["best"]["ending_value"] = cerebro.broker.getvalue()
+                params["train"]["best"]["profit"] = cerebro.broker.getvalue() - 100000
+
+# test data
+class MacdV2Strategy(BaseStrategyFrame):
+    """
+    Implementing the macd20 strategy from zwPython.
+
+    Rule:
+        If MACD - MACD_signal > 0: buy.
+        If MACD - MACD_signal < 0: sell.
+
+    Args:
+        fast_period (int): fast ema period.
+        slow_period (int): slow ema period.
+        signal_period (int): macd signal period.
+    """
+    params = (("fast_period", params["train"]["best"]["fast_period"]), ("slow_period", params["train"]["best"]["slow_period"]), ("signal_period", params["train"]["best"]["signal_period"]))
+
+    def __init__(self):
+
+        # multiple inheritance
+        super(MacdV2Strategy, self).__init__()
+
+        print("printlog:", self.params.printlog)
+        print("period_me1:", self.params.fast_period)
+        print("period_me2:", self.params.slow_period)
+        print("period_signal:", self.params.signal_period)
+
+        # Add indicators
+        self.macd = bt.indicators.MACD(
+            self.dataclose,
+            period_me1=self.params.fast_period,
+            period_me2=self.params.slow_period,
+            period_signal=self.params.signal_period,
+        )
+
+    def next(self):
+        # Simply log the closing price of the series from the reference
+        # self.log("Close, %.2f" % self.dataclose[0])
+        self.log(
+            "O:{:.2f}, H:{:.2f}, L:{:.2f}, C:{:.2f}".format(
+                self.dataopen[0], self.datahigh[0], self.datalow[0], self.dataclose[0]
+            )
+        )
+
+        # Check if an order is pending ... if yes, we cannot send a 2nd one
+        if self.order:
+            return
+
+        # Check if we are in the market
+        if not self.position:
+
+            # Not yet ... we MIGHT BUY if ...
+            if self.macd.macd[0] > self.macd.signal[0]:
+
+                # BUY, BUY, BUY!!! (with all possible default parameters)
+                self.log("BUY CREATE, %.2f" % self.dataclose[0])
+
+                # Keep track of the created order to avoid a 2nd order
+                self.order = self.buy()
+
+        else:
+
+            if self.macd.macd[0] < self.macd.signal[0]:
+
+                # SELL, SELL, SELL!!! (with all possible default parameters)
+                self.log("SELL CREATE, %.2f" % self.dataclose[0])
+
+                # Keep track of the created order to avoid a 2nd order
+                self.order = self.sell()
+cerebro = bt.Cerebro()
+cerebro.addstrategy(MacdV2Strategy)
+cerebro.broker.setcash(100000)
+dt_start = datetime.strptime("2020-01-01","%Y-%m-%d")
+dt_end = datetime.strptime("2021-10-28","%Y-%m-%d")
+data = bt.feeds.GenericCSVData(
+    timeframe = bt.TimeFrame.Minutes,
+    compression = 60,
+    dataname=BTC_test_data,
+    fromdate=dt_start,      
+    todate=dt_end,
+    nullvalue=0.0,
+    dtformat=('%Y-%m-%d %H:%M:%S'),   
+    datetime=0,             # 各列的位置，从0开始，如列缺失则为None，-1表示自动根据列名判断
+    open = 1,
+    high = 2,
+    low = 3,
+    close = 4,
+    openinterest=-1,
+    volume = -1
+)
+cerebro.adddata(data)
+print('Starting Value: %.2f' % cerebro.broker.getvalue())
+results = cerebro.run()
+print('Ending Value: %.2f' % cerebro.broker.getvalue())
+params["test"]["best"]["fast_period"] = params["train"]["best"]["fast_period"]
+params["test"]["best"]["slow_period"] = params["train"]["best"]["slow_period"]
+params["test"]["best"]["signal_period"] = params["train"]["best"]["signal_period"]
+params["test"]["best"]["ending_value"] = cerebro.broker.getvalue()
+params["test"]["best"]["profit"] = cerebro.broker.getvalue() - 100000
+with open(str(report_folder / "params.json"), "w") as f:
+    json.dump(params, f, indent = 4) 

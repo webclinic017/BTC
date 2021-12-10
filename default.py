@@ -5,7 +5,7 @@ import backtrader as bt
 # from __future__ import (absolute_import, division, print_function, unicode_literals)
 
 
-BTC_data = pathlib.Path().cwd() / "BTC_hour.csv"
+BTC_data = pathlib.Path().cwd() / "data" / "BTC_hour.csv"
 
 
 cerebro = bt.Cerebro()

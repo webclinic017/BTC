@@ -1,0 +1,30 @@
+{
+    "train": {
+        "default": {
+            "fast_period": 12,
+            "slow_period": 26,
+            "signal_period": 9,
+            "starting_value": 100000,
+            "ending_value": 119378.88549999965,
+            "profit": 19378.885499999655
+        },
+        "best": {
+            "fast_period": 11,
+            "slow_period": 26,
+            "signal_period": 10,
+            "starting_value": 100000,
+            "ending_value": 119584.45883333302,
+            "profit": 19584.458833333018
+        }
+    },
+    "test": {
+        "best": {
+            "fast_period": 11,
+            "slow_period": 26,
+            "signal_period": 10,
+            "starting_value": 100000,
+            "ending_value": 135346.1493333333,
+            "profit": 35346.149333333306
+        }
+    }
+}
