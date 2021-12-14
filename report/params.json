@@ -5,26 +5,34 @@
             "slow_period": 26,
             "signal_period": 9,
             "starting_value": 100000,
-            "ending_value": 119378.88549999965,
-            "profit": 19378.885499999655
+            "ending_value": 119378.88549999984,
+            "profit": 19378.885499999844
         },
         "best": {
             "fast_period": 11,
             "slow_period": 26,
             "signal_period": 10,
             "starting_value": 100000,
-            "ending_value": 119584.45883333302,
-            "profit": 19584.458833333018
+            "ending_value": 119584.45883333318,
+            "profit": 19584.458833333178
         }
     },
     "test": {
+        "default": {
+            "fast_period": 12,
+            "slow_period": 26,
+            "signal_period": 9,
+            "starting_value": 100000,
+            "ending_value": 133631.9871666667,
+            "profit": 33631.98716666669
+        },
         "best": {
             "fast_period": 11,
             "slow_period": 26,
             "signal_period": 10,
             "starting_value": 100000,
-            "ending_value": 135346.1493333333,
-            "profit": 35346.149333333306
+            "ending_value": 135346.14933333345,
+            "profit": 35346.14933333345
         }
     }
 }

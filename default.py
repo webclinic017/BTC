@@ -1,5 +1,4 @@
 from datetime import datetime
-from reference.Strategy import zwpy_sta
 import pathlib
 import backtrader as bt
 # from __future__ import (absolute_import, division, print_function, unicode_literals)
@@ -9,7 +8,7 @@ BTC_data = pathlib.Path().cwd() / "data" / "BTC_hour.csv"
 
 
 cerebro = bt.Cerebro()
-cerebro.addstrategy(zwpy_sta.MacdV2Strategy)
+cerebro.addstrategy(MacdV2Strategy)
 cerebro.broker.setcash(100000)
 
 dt_start = datetime.strptime("20190925","%Y%m%d")
