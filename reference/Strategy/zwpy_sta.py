@@ -24,7 +24,6 @@ class Tim0Strategy(BaseStrategyFrame):
 
         # multiple inheritance
         super(Tim0Strategy, self).__init__()
-
         print("printlog:", self.params.printlog)
 
     def next(self):
@@ -468,14 +467,14 @@ class MacdV2Strategy(BaseStrategyFrame):
         slow_period (int): slow ema period.
         signal_period (int): macd signal period.
     """
-
+    
     params = (("fast_period", 12), ("slow_period", 26), ("signal_period", 9))
 
     def __init__(self):
 
         # multiple inheritance
         super(MacdV2Strategy, self).__init__()
-
+        self.time_series = {"A":[]}
         print("printlog:", self.params.printlog)
         print("period_me1:", self.params.fast_period)
         print("period_me2:", self.params.slow_period)
@@ -492,6 +491,7 @@ class MacdV2Strategy(BaseStrategyFrame):
     def next(self):
         # Simply log the closing price of the series from the reference
         # self.log("Close, %.2f" % self.dataclose[0])
+        self.time_series['A'].append(self.broker.getvalue())
         self.log(
             "O:{:.2f}, H:{:.2f}, L:{:.2f}, C:{:.2f}".format(
                 self.dataopen[0], self.datahigh[0], self.datalow[0], self.dataclose[0]
@@ -523,6 +523,10 @@ class MacdV2Strategy(BaseStrategyFrame):
 
                 # Keep track of the created order to avoid a 2nd order
                 self.order = self.sell()
+    def stop(self):
+        # self.log('Ending Value %.2f' % self.broker.getvalue(), doprint=True)
+        print(self.time_series)
+        print("=== Backtesting Finished! ===")
 
 
 class KdjV1Strategy(BaseStrategyFrame):
