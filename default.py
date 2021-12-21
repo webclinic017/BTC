@@ -2,13 +2,23 @@ from datetime import datetime
 import pathlib
 import backtrader as bt
 # from __future__ import (absolute_import, division, print_function, unicode_literals)
+from pyfolio import timeseries 
+from reference.Strategy import zwpy_sta
+
+
+
 
 
 BTC_data = pathlib.Path().cwd() / "data" / "BTC_hour.csv"
 
 
 cerebro = bt.Cerebro()
-cerebro.addstrategy(MacdV2Strategy)
+cerebro.addstrategy(zwpy_sta.MacdV2Strategy)
+# cerebro.optstrategy(
+#             zwpy_sta.MacdV2Strategy,
+#             fast_period = range(9,13),
+#             slow_period = range(24,27),
+#             signal_period = range(8,12))
 cerebro.broker.setcash(100000)
 
 dt_start = datetime.strptime("20190925","%Y%m%d")
@@ -41,4 +51,7 @@ returns, positions, transactions, gross_lev = pyfoliozer.get_pf_items()
 import pyfolio as pf
 
 pf.create_full_tear_sheet(returns,)
+perf_func = timeseries.perf_stats 
+perf_stats_all = perf_func( returns,positions=None, transactions=None, turnover_denom="AGB")
+print(perf_stats_all['Sharpe ratio'])
 cerebro.plot(iplot = False)

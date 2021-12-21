@@ -1,0 +1,38 @@
+{
+    "train": {
+        "default": {
+            "fast_period": 0,
+            "slow_period": 0,
+            "signal_period": 0,
+            "starting_value": 100000,
+            "ending_value": 0,
+            "sharp_ratio": 0
+        },
+        "best": {
+            "fast_period": 11,
+            "slow_period": 26,
+            "signal_period": 10,
+            "starting_value": 100000,
+            "ending_value": 119584.45883333302,
+            "sharp_ratio": 2.6242668114250085
+        }
+    },
+    "test": {
+        "default": {
+            "fast_period": 0,
+            "slow_period": 0,
+            "signal_period": 0,
+            "starting_value": 100000,
+            "ending_value": 0,
+            "sharp_ratio": 0
+        },
+        "best": {
+            "fast_period": 0,
+            "slow_period": 0,
+            "signal_period": 0,
+            "starting_value": 100000,
+            "ending_value": 0,
+            "sharp_ratio": 0
+        }
+    }
+}
