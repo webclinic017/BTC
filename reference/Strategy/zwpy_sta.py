@@ -469,7 +469,7 @@ class MacdV2Strategy(BaseStrategyFrame):
         signal_period (int): macd signal period.
     """
 
-    params = (("fast_period", 12), ("slow_period", 26), ("signal_period", 9))
+    params = (("fast_period", 11), ("slow_period", 26), ("signal_period", 9))
 
     def __init__(self, **kwargs):
 

@@ -39,9 +39,9 @@ class MacdV2Strategy(BaseStrategyFrame):
         signal_period (int): macd signal period.
     """
 
-    fast_period = 11
-    slow_period = 26
-    signal_period = 10
+    fast_period = 10
+    slow_period = 25
+    signal_period = 8
     params = (("fast_period", fast_period), ("slow_period", slow_period), ("signal_period", signal_period))
     tmp = []
     def __init__(self):
