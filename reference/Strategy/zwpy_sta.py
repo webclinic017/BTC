@@ -470,8 +470,8 @@ class MacdV2Strategy(BaseStrategyFrame):
     """
 
     params = (("fast_period", 11), ("slow_period", 26), ("signal_period", 9))
-
-    def __init__(self, **kwargs):
+    cp = {}
+    def __init__(self):
 
         # multiple inheritance
         super(MacdV2Strategy, self).__init__()
@@ -497,7 +497,7 @@ class MacdV2Strategy(BaseStrategyFrame):
                 self.dataopen[0], self.datahigh[0], self.datalow[0], self.dataclose[0]
             )
         )
-
+        
         # Check if an order is pending ... if yes, we cannot send a 2nd one
         if self.order:
             return
