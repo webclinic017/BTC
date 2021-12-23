@@ -6,9 +6,6 @@ from pyfolio import timeseries
 from reference.Strategy import zwpy_sta
 
 
-
-
-
 BTC_data = pathlib.Path().cwd() / "data" / "BTC_hour.csv"
 
 

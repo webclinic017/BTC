@@ -7,7 +7,7 @@ so user only need to writing 1) __init__ method and 2) next method.
 import backtrader as bt
 from reference.Strategy.BaseStrategyFrame import BaseStrategyFrame
 from reference.Strategy.utils import VolumeWeightedAveragePrice
-
+import json
 
 class Tim0Strategy(BaseStrategyFrame):
     """
@@ -469,8 +469,11 @@ class MacdV2Strategy(BaseStrategyFrame):
         signal_period (int): macd signal period.
     """
 
-    params = (("fast_period", 11), ("slow_period", 26), ("signal_period", 9))
-    cp = {}
+    params = (("fast_period", 10), ("slow_period", 25), ("signal_period", 8))
+    compare = {
+        "macdV2":[],
+        "noaction":[]
+    }
     def __init__(self):
 
         # multiple inheritance
@@ -497,7 +500,8 @@ class MacdV2Strategy(BaseStrategyFrame):
                 self.dataopen[0], self.datahigh[0], self.datalow[0], self.dataclose[0]
             )
         )
-        
+        self.compare['noaction'].append(self.dataclose[0])
+        self.compare['macdV2'].append(self.broker.getvalue())
         # Check if an order is pending ... if yes, we cannot send a 2nd one
         if self.order:
             return
@@ -523,7 +527,10 @@ class MacdV2Strategy(BaseStrategyFrame):
 
                 # Keep track of the created order to avoid a 2nd order
                 self.order = self.sell()
-
+    def stop(self):
+        # self.log('Ending Value %.2f' % self.broker.getvalue(), doprint=True)
+        with open("./report/timeseries.json", "w")as f:
+            f = json.dumps(self.compare, indent=4)
 
 class KdjV1Strategy(BaseStrategyFrame):
     """
