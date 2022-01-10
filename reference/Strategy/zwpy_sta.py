@@ -8,6 +8,7 @@ import backtrader as bt
 from reference.Strategy.BaseStrategyFrame import BaseStrategyFrame
 from reference.Strategy.utils import VolumeWeightedAveragePrice
 import json
+import pandas as pd
 
 class Tim0Strategy(BaseStrategyFrame):
     """
@@ -471,9 +472,16 @@ class MacdV2Strategy(BaseStrategyFrame):
 
     params = (("fast_period", 10), ("slow_period", 25), ("signal_period", 8))
     compare = {
-        "macdV2":[],
-        "noaction":[]
+        "timeseries":{
+            "macdV2":[],
+            "buyandhold":[]
+        },
+        "sharpe":{
+            "macdV2":0,
+            "buyandhold":0
+        } 
     }
+    order_ls = []
     def __init__(self):
 
         # multiple inheritance
@@ -500,8 +508,7 @@ class MacdV2Strategy(BaseStrategyFrame):
                 self.dataopen[0], self.datahigh[0], self.datalow[0], self.dataclose[0]
             )
         )
-        self.compare['noaction'].append(self.dataclose[0])
-        self.compare['macdV2'].append(self.broker.getvalue())
+        self.compare['timeseries']['macdV2'].append(self.broker.getvalue())
         # Check if an order is pending ... if yes, we cannot send a 2nd one
         if self.order:
             return
@@ -517,6 +524,7 @@ class MacdV2Strategy(BaseStrategyFrame):
 
                 # Keep track of the created order to avoid a 2nd order
                 self.order = self.buy()
+                self.order_ls.append(['BUY', self.dataclose[0]])
 
         else:
 
@@ -527,10 +535,13 @@ class MacdV2Strategy(BaseStrategyFrame):
 
                 # Keep track of the created order to avoid a 2nd order
                 self.order = self.sell()
+                self.order_ls.append(['SELL', self.dataclose[0]]) 
+
+
     def stop(self):
-        # self.log('Ending Value %.2f' % self.broker.getvalue(), doprint=True)
-        with open("./report/timeseries.json", "w")as f:
-            f = json.dumps(self.compare, indent=4)
+        pd.DataFrame(self.order_ls, columns=['signal', 'price']).to_csv('./report/signal.csv', index=False)
+        self.log('Ending Value %.2f' % self.broker.getvalue(), doprint=True)
+        
 
 class KdjV1Strategy(BaseStrategyFrame):
     """
@@ -742,3 +753,21 @@ class RsiStrategy(BaseStrategyFrame):
 
                 # Keep track of the created order to avoid a 2nd order
                 self.order = self.sell()
+
+
+class BuyAndHold_1(bt.Strategy):
+    def start(self):
+        self.val_start = self.broker.get_cash()  # keep the starting cash
+        with open('./report/compare.json')as f:
+            self.compare = json.load(f)
+    def nextstart(self):
+        # Buy all the available cash
+        size = int(self.broker.get_cash() / self.data)
+        self.buy(size=1)
+    def next(self):
+        self.compare['timeseries']['buyandhold'].append(self.broker.getvalue())
+    def stop(self):
+        # calculate the actual returns
+        self.roi = (self.broker.get_value() / self.val_start) - 1.0
+        print('ROI:        {:.2f}%'.format(100.0 * self.roi))
+     

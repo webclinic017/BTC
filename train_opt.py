@@ -2,14 +2,12 @@ from datetime import datetime
 import pathlib
 import backtrader as bt
 # from __future__ import (absolute_import, division, print_function, unicode_literals)
-from pyfolio import timeseries 
 import backtrader.analyzers as btanalyzers
 from reference.Strategy import zwpy_sta
-import pyfolio as pf
 import pandas as pd
 
 
-BTC_data = pathlib.Path().cwd() / "data" / "BTC_hour.csv"
+BTC_data = pathlib.Path().cwd() / "data" / "training_set.csv"
 
 
 cerebro = bt.Cerebro()
@@ -22,7 +20,7 @@ cerebro.optstrategy(
 cerebro.broker.setcash(100000)
 
 dt_start = datetime.strptime("20190925","%Y%m%d")
-dt_end = datetime.strptime("20211028","%Y%m%d")
+dt_end = datetime.strptime("20210101","%Y%m%d")
 data = bt.feeds.GenericCSVData(
     timeframe = bt.TimeFrame.Minutes,
     compression = 60,
@@ -59,4 +57,4 @@ par_list = [[ele[0].params.fast_period,
 # Save result to csv
 par_df = pd.DataFrame(par_list, columns = ['fast_period', 'slow_period', 'signal_period', 'return', 'sharpe'])
 print(par_df.head())
-par_df.to_csv('result.csv')
+par_df.to_csv('./report/result.csv')
